@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import FallingCoin from './components/UI/FallingCoin'
 
 function App() {
   const [numbers, setNumbers] = useState<number[]>([])
@@ -6,6 +7,7 @@ function App() {
   const [ticketCount, setTicketCount] = useState<number>(1)
   const [lastWinner, setLastWinner] = useState<string>('0x1234...5678')
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [fallingCoins, setFallingCoins] = useState<{ id: number; left: number }[]>([])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -36,13 +38,26 @@ function App() {
   }
 
   const adjustTicketCount = (amount: number) => {
-    setTicketCount((prev) => Math.max(1, prev + amount))
-  }
+    setTicketCount((prev) => Math.max(1, prev + amount));
+    if (amount > 0) {
+      const newCoin = {
+        id: Date.now(),
+        left: Math.random() * window.innerWidth,
+      };
+      setFallingCoins((prevCoins) => [...prevCoins, newCoin]);
+      setTimeout(() => {
+        setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== newCoin.id));
+      }, 3000);
+    }
+  };
 
   return (
-    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full">
+    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
+      {fallingCoins.map((coin) => (
+        <FallingCoin key={coin.id} left={coin.left} />
+      ))}
       <h1 className="text-5xl font-bold mb-8 text-yellow-400 mt-8">TheLottery</h1>
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
+      <div className="bg-black p-8 rounded-lg shadow-lg max-w-2xl w-full">
         <div className="mb-6 text-center">
           <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
           <p className="text-4xl font-bold text-green-400">17.4 ETH</p>

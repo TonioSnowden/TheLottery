@@ -105,15 +105,21 @@ function App() {
 
   const adjustTicketCount = (amount: number) => {
     setTicketCount((prev) => Math.max(1, prev + amount));
-    if (amount > 0) {
-      const newCoin = {
-        id: Date.now(),
-        left: Math.random() * window.innerWidth,
-      };
-      setFallingCoins((prevCoins) => [...prevCoins, newCoin]);
-      setTimeout(() => {
-        setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== newCoin.id));
-      }, 3000);
+  };
+
+  const connectWallet = async () => {
+    try {
+      const provider = await detectEthereumProvider();
+      if (provider) {
+        await (provider as any).request({ method: 'eth_requestAccounts' });
+        const ethersProvider = new ethers.BrowserProvider(provider as any);
+        await setUpContract(ethersProvider);
+      } else {
+        alert('Please install MetaMask!');
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      alert('Error connecting wallet. Please try again.');
     }
   };
 

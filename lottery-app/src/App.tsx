@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import FallingCoin from './components/UI/FallingCoin'
 
 function App() {
-  const [numbers, setNumbers] = useState<number[]>([])
   const [winningNumber, setWinningNumber] = useState<number | null>(null)
   const [ticketCount, setTicketCount] = useState<number>(1)
   const [lastWinner, setLastWinner] = useState<string>('0x1234...5678')
@@ -40,82 +39,86 @@ function App() {
   const adjustTicketCount = (amount: number) => {
     setTicketCount((prev) => Math.max(1, prev + amount));
     if (amount > 0) {
-      const newCoin = {
-        id: Date.now(),
+      const coinCount = Math.floor(Math.random() * 4) + 1; // Random number between 1 and 4
+      const newCoins = Array.from({ length: coinCount }, () => ({
+        id: Date.now() + Math.random(), // Ensure unique IDs
         left: Math.random() * window.innerWidth,
-      };
-      setFallingCoins((prevCoins) => [...prevCoins, newCoin]);
-      setTimeout(() => {
-        setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== newCoin.id));
-      }, 3000);
+      }));
+      setFallingCoins((prevCoins) => [...prevCoins, ...newCoins]);
     }
+  };
+
+  const removeCoin = (id: number) => {
+    setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== id));
   };
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
       {fallingCoins.map((coin) => (
-        <FallingCoin key={coin.id} left={coin.left} />
+        <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
       ))}
-      <h1 className="text-5xl font-bold mb-8 text-yellow-400 mt-8">TheLottery</h1>
-      <div className="bg-black p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <div className="mb-6 text-center">
-          <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
-          <p className="text-4xl font-bold text-green-400">17.4 ETH</p>
-        </div>
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
-          <p className="text-3xl font-bold text-blue-400">{timeLeft}</p>
-        </div>
-        <div className="flex justify-between mb-6 items-end">
-          <div>
-            <label htmlFor="ticketCount" className="block mb-2">Number of Tickets:</label>
-            <div className="flex items-center">
-              <button
-                className="bg-gray-700 text-white px-3 py-2 rounded-l"
-                onClick={() => adjustTicketCount(-1)}
-              >
-                -
-              </button>
-              <input
-                type="number"
-                id="ticketCount"
-                value={ticketCount}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value)
-                  if (!isNaN(value) && value >= 1) {
-                    setTicketCount(value)
-                  }
-                }}
-                className="bg-gray-700 text-white px-3 py-2 w-16 text-center"
-                readOnly
-              />
-              <button
-                className="bg-gray-700 text-white px-3 py-2 rounded-r"
-                onClick={() => adjustTicketCount(1)}
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <button
-            className="bg-yellow-500 text-black px-6 py-2 rounded font-bold"
-            onClick={buyTickets}
-          >
-            Buy Tickets ({(ticketCount * 0.0001).toFixed(4)} ETH)
-          </button>
-        </div>
-        {winningNumber !== null && (
+      <div className="w-full max-w-2xl">
+        <h1 className="text-5xl font-bold mb-8 text-yellow-400 mt-8">TheLottery</h1>
+        <div className="bg-black p-8 rounded-lg shadow-lg w-full">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
-            <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
-              {winningNumber}
-            </div>
+            <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
+            <p className="text-4xl font-bold text-green-400">17.4 ETH</p>
           </div>
-        )}
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
-          <p className="text-green-400 font-mono">{lastWinner}</p>
-          <p className="text-xl font-bold mt-2">Congratulations!</p>
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
+            <p className="text-3xl font-bold text-blue-400">{timeLeft}</p>
+          </div>
+          <div className="flex justify-between mb-6 items-end">
+            <div>
+              <label htmlFor="ticketCount" className="block mb-2">Number of Tickets:</label>
+              <div className="flex items-center">
+                <button
+                  className="bg-gray-700 text-white px-3 py-2 rounded-l"
+                  onClick={() => adjustTicketCount(-1)}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  id="ticketCount"
+                  value={ticketCount}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (!isNaN(value) && value >= 1) {
+                      setTicketCount(value)
+                    }
+                  }}
+                  className="bg-gray-700 text-white px-3 py-2 w-16 text-center"
+                  readOnly
+                />
+                <button
+                  className="bg-gray-700 text-white px-3 py-2 rounded-r"
+                  onClick={() => adjustTicketCount(1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <button
+              className="bg-yellow-500 text-black px-6 py-2 rounded font-bold"
+              onClick={buyTickets}
+            >
+              Buy Tickets ({(ticketCount * 0.0001).toFixed(4)} ETH)
+            </button>
+          </div>
+          {winningNumber !== null && (
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
+              <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
+                {winningNumber}
+              </div>
+            </div>
+          )}
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
+            <p className="text-green-400 font-mono">{lastWinner}</p>
+            <p className="text-xl font-bold mt-2">Congratulations!</p>
+          </div>
         </div>
       </div>
     </div>

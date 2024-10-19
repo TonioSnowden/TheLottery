@@ -6,6 +6,7 @@ import PolyLotteryABI from './json/PolyLotteryABI.json'
 import lastWinnerData from './json/lastWinner.json'
 import lotteryInfoData from './json/lotteryInfo.json'
 import { useEnsName } from 'wagmi'
+import logo from './assets/logo.svg'
 
 const CONTRACT_ADDRESS = '0xf4e53F35b1e8665928518D1511BB1Ff3Fa30B791'
 
@@ -125,6 +126,7 @@ function App() {
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
+      <img src={logo} alt="TheLottery Logo" className="absolute top-4 left-4 w-16 h-16" />
       {fallingCoins.map((coin) => (
         <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
       ))}

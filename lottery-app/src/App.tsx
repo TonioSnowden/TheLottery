@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import FallingCoin from './components/UI/FallingCoin'
 import { ethers } from 'ethers'
 import detectEthereumProvider from '@metamask/detect-provider'
 import PolyLotteryABI from './json/PolyLotteryABI.json'
@@ -8,11 +9,11 @@ import lotteryInfoData from './json/lotteryInfo.json'
 const CONTRACT_ADDRESS = '0xf4e53F35b1e8665928518D1511BB1Ff3Fa30B791'
 
 function App() {
-  const [numbers, setNumbers] = useState<number[]>([])
   const [winningNumber, setWinningNumber] = useState<number | null>(null)
   const [ticketCount, setTicketCount] = useState<number>(1)
   const [lastWinner, setLastWinner] = useState<string>(lastWinnerData.address)
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [fallingCoins, setFallingCoins] = useState<{ id: number; left: number }[]>([])
   const [totalPrize, setTotalPrize] = useState(lotteryInfoData.currentJackpot)
   const [ticketPrice, setTicketPrice] = useState(lotteryInfoData.ticketPrice)
   const [contract, setContract] = useState<ethers.Contract | null>(null)
@@ -102,11 +103,26 @@ function App() {
   }
 
   const adjustTicketCount = (amount: number) => {
-    setTicketCount((prev) => Math.max(1, prev + amount))
-  }
+    setTicketCount((prev) => Math.max(1, prev + amount));
+    if (amount > 0) {
+      const coinCount = Math.floor(Math.random() * 4) + 1; // Random number between 1 and 4
+      const newCoins = Array.from({ length: coinCount }, () => ({
+        id: Date.now() + Math.random(), // Ensure unique IDs
+        left: Math.random() * window.innerWidth,
+      }));
+      setFallingCoins((prevCoins) => [...prevCoins, ...newCoins]);
+    }
+  };
+
+  const removeCoin = (id: number) => {
+    setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== id));
+  };
 
   return (
-    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative">
+    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
+      {fallingCoins.map((coin) => (
+        <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
+      ))}
       <div className="absolute top-4 right-4">
         {!isConnected ? (
           <button
@@ -168,18 +184,19 @@ function App() {
             Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(4)} MATIC)
           </button>
         </div>
-        {winningNumber !== null && (
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
-            <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
-              {winningNumber}
+          {winningNumber !== null && (
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
+              <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
+                {winningNumber}
+              </div>
             </div>
+          )}
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
+            <p className="text-green-400 font-mono">{lastWinner}</p>
+            <p className="text-xl font-bold mt-2">Congratulations!</p>
           </div>
-        )}
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
-          <p className="text-green-400 font-mono">{lastWinner}</p>
-          <p className="text-xl font-bold mt-2">Congratulations!</p>
         </div>
       </div>
     </div>

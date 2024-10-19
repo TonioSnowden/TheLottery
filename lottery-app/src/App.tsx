@@ -5,6 +5,7 @@ import detectEthereumProvider from '@metamask/detect-provider'
 import PolyLotteryABI from './json/PolyLotteryABI.json'
 import lastWinnerData from './json/lastWinner.json'
 import lotteryInfoData from './json/lotteryInfo.json'
+import { useEnsName } from 'wagmi'
 
 const CONTRACT_ADDRESS = '0xf4e53F35b1e8665928518D1511BB1Ff3Fa30B791'
 
@@ -118,6 +119,10 @@ function App() {
     setFallingCoins((prevCoins) => prevCoins.filter((coin) => coin.id !== id));
   };
 
+  const { data: winnerEnsName } = useEnsName({
+    address: lastWinner as `0x${string}`,
+  })
+
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
       {fallingCoins.map((coin) => (
@@ -194,7 +199,9 @@ function App() {
           )}
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
-            <p className="text-green-400 font-mono">{lastWinner}</p>
+            <p className="text-green-400 font-mono">
+              {winnerEnsName || lastWinner}
+            </p>
             <p className="text-xl font-bold mt-2">Congratulations!</p>
           </div>
         </div>

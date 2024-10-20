@@ -182,7 +182,7 @@ function App() {
               onClick={buyTickets}
               disabled={!isConnected}
             >
-              Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(4)} MATIC)
+              Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(2)} USDT)
             </button>
           </div>
             <div className="text-center p-6 bg-black bg-opacity-50">

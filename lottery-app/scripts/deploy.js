@@ -7,8 +7,8 @@ async function main() {
   const subscriptionId = "112126700563929212635047358461348113459517158692596716182031959155606886216369"; // Replace with your actual subscription ID
   const keyHash = "0x816bedba8a50b294e5cbd47842baf240c2385f2eaf719edbd4f250a137a8c899"; // Amoy keyHash
 
-  const PolyLottery = await hre.ethers.getContractFactory("PolyLottery");
-  const polyLottery = await PolyLottery.deploy(
+  const Lottery = await hre.ethers.getContractFactory("Lottery");
+  const lottery = await Lottery.deploy(
     ticketPrice,
     lotteryDuration,
     vrfCoordinator,
@@ -16,9 +16,9 @@ async function main() {
     keyHash
   );
 
-  await polyLottery.waitForDeployment();
+  await lottery.waitForDeployment();
 
-  console.log("PolyLottery deployed to:", await polyLottery.getAddress());
+  console.log("Lottery deployed to:", await lottery.getAddress());
 
   // Add the contract to the VRFCoordinatorV2
 

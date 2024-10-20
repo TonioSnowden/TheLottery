@@ -135,18 +135,18 @@ function App() {
           <DynamicWidget />
         </div>
         <h1 className="text-6xl font-bold mb-16 text-yellow-400 mt-5">TheLottery</h1>
-        <div className="p-8 rounded-lg max-w-4xl w-full">
-          <div className="flex justify-between items-center mb-6">
+        <div className="rounded-lg max-w-4xl w-full">
+          <div className="p-8 flex justify-between items-center">
             <h2 className="text-3xl font-semibold text-white">Next Draw:</h2>
             <p className="text-4xl font-bold text-yellow-400">{timeLeft}</p>
           </div>
-          <div className="flex justify-between items-center mb-6">
+          <div className="p-8 flex justify-between items-center">
             <h2 className="text-3xl font-semibold text-white">Current Jackpot:</h2>
             <p className="text-4xl font-bold text-green-400">
               {totalPrize} MATIC <span className="text-2xl">($XX.XX)</span>
             </p>
           </div>
-          <div className="mt-24 flex justify-between mb-6 items-end p-10 bg-black bg-opacity-50">
+          <div className="mt-12 flex justify-between mb-6 items-end p-10 bg-black bg-opacity-50">
             <div>
               <label htmlFor="ticketCount" className="block text-3xl font-semibold mb-8">Number of Tickets:</label>
               <div className="flex items-center">
@@ -189,6 +189,9 @@ function App() {
               <h2 className="text-3xl font-semibold mb-6">Last Winner</h2>
               <p className="text-green-400 font-mono text-3xl mb-3">
                 {winnerEnsName || lastWinner}
+              </p>
+              <p className="text-yellow-400 font-mono text-3xl">
+                Won: {lastWinnerData.prize} MATIC
               </p>
             </div>
           </div>

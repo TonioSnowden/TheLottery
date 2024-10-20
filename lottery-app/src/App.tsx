@@ -146,29 +146,29 @@ function App() {
               {totalPrize} MATIC <span className="text-2xl">($XX.XX)</span>
             </p>
           </div>
-          <div className="flex justify-between mb-6 items-end">
+          <div className="mt-24 flex justify-between mb-6 items-end p-10 bg-black bg-opacity-50">
             <div>
-              <label htmlFor="ticketCount" className="block text-lg mb-2">Number of Tickets:</label>
+              <label htmlFor="ticketCount" className="block text-3xl font-semibold mb-8">Number of Tickets:</label>
               <div className="flex items-center">
                 <button
-                  className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
+                  className="bg-yellow-400 text-black font-bold px-5 py-3 hover:bg-yellow-500 transition-colors mr-3 text-xl"
                   onClick={() => adjustTicketCount(-1)}
                 >
                   -
                 </button>
                 <button
-                  className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
+                  className="bg-yellow-400 text-black font-bold px-5 py-3 hover:bg-yellow-500 transition-colors mr-3 text-xl"
                   onClick={() => adjustTicketCount(1)}
                 >
                   +
                 </button>
                 <span 
-                  className={`text-3xl font-bold transition-all duration-100 ${
+                  className={`text-4xl font-bold transition-all duration-100 ${
                     isAnimating
                       ? ticketCount > prevTicketCount
-                        ? 'text-blue-500 text-4xl'
+                        ? 'text-blue-500 text-5xl'
                         : ticketCount < prevTicketCount
-                        ? 'text-red-500 text-xl'
+                        ? 'text-red-500 text-3xl'
                         : ''
                       : 'text-white scale-100'
                   }`}
@@ -178,27 +178,18 @@ function App() {
               </div>
             </div>
             <button
-              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold"
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-lg font-bold text-xl"
               onClick={buyTickets}
               disabled={!isConnected}
             >
               Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(4)} MATIC)
             </button>
           </div>
-            {winningNumber !== null && (
-              <div className="mb-6 text-center">
-                <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
-                <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
-                  {winningNumber}
-                </div>
-              </div>
-            )}
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
-              <p className="text-green-400 font-mono">
+            <div className="text-center p-6 bg-black bg-opacity-50">
+              <h2 className="text-3xl font-semibold mb-6">Last Winner</h2>
+              <p className="text-green-400 font-mono text-3xl mb-3">
                 {winnerEnsName || lastWinner}
               </p>
-              <p className="text-xl font-bold mt-2">Congratulations!</p>
             </div>
           </div>
         </div>

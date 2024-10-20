@@ -33,6 +33,12 @@ module.exports = {
       accounts: [PRIVATE_KEY_MAIN, PRIVATE_KEY_TEST_1, PRIVATE_KEY_TEST_2],
       chainId: 80002,
       timeout: 60000 // Increase timeout to 60 seconds
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: [PRIVATE_KEY_MAIN, PRIVATE_KEY_TEST_1, PRIVATE_KEY_TEST_2],
+      chainId: 84532,
+      timeout: 60000 // Increase timeout to 60 seconds
     }
   }
 };

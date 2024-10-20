@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
-import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
-import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+// import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
+import { MessagingReceipt } from "@layerzerolabs/oapp-evm/contracts/oapp/OAppSender.sol";
 
-contract PolyLottery is VRFConsumerBaseV2Plus {
+import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+contract Lottery is OApp, VRFConsumerBaseV2 {
     uint256 public ticketPrice;
     uint256 public lotteryDuration;
     address[] public participants;
@@ -14,11 +18,12 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
     bool public winnerSelected;
     uint256 public constant CREATOR_FEE = 10; // 10% fee for the creator
 
-    uint256 s_subscriptionId;
-    bytes32 keyHash;
-    uint32 constant callbackGasLimit = 100000;
-    uint16 constant requestConfirmations = 3;
-    uint32 constant numWords = 1;
+    VRFCoordinatorV2Interface public vrfCoordinator;
+    bytes32 public keyHash;
+    uint64 public subscriptionId;
+    uint32 public callbackGasLimit;
+    uint16 public requestConfirmations;
+    uint32 public numWords;
 
     uint256 public s_requestId;
     address s_owner;
@@ -26,27 +31,38 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
     uint256[] public ticketCounts;
     uint256 public totalTickets;
 
-    event TicketPurchased(address buyer);
+    mapping(address => uint256) public participantTicketCounts;
+    mapping(address => uint32) public participantSourceChains;
+
+    event TicketPurchased(address buyer, uint256 numberOfTickets);
     event LotteryEnded(address winner, uint256 prize, bool winnerPaid, bool ownerPaid);
     event LotteryEndRequested(uint256 requestId);
     event RandomWordsRequested(uint256 requestId);
     event LotteryEndingStep(string step);
     event NewLotteryStarted(uint256 lotteryId, uint256 ticketPrice, uint256 endTime);
-    event TicketsPurchased(address buyer, uint256 numberOfTickets);
 
     constructor(
+        address _endpoint,
+        address _owner,
         uint256 _ticketPrice,
         uint256 _lotteryDuration,
         address _vrfCoordinator,
-        uint256 _subscriptionId,
-        bytes32 _keyHash
-    ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
+        bytes32 _keyHash,
+        uint64 _subscriptionId,
+        uint32 _callbackGasLimit,
+        uint16 _requestConfirmations,
+        uint32 _numWords
+    ) OApp(_endpoint, _owner) VRFConsumerBaseV2(_vrfCoordinator) {
         ticketPrice = _ticketPrice;
         lotteryDuration = _lotteryDuration;
         lotteryEndTime = block.timestamp + _lotteryDuration;
-        s_subscriptionId = _subscriptionId;
+        vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinator);
         keyHash = _keyHash;
-        s_owner = msg.sender;
+        subscriptionId = _subscriptionId;
+        callbackGasLimit = _callbackGasLimit;
+        requestConfirmations = _requestConfirmations;
+        numWords = _numWords;
+        s_owner = _owner;
         startNewLottery(_ticketPrice, _lotteryDuration);
     }
 
@@ -69,45 +85,54 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
 
     function buyTickets(uint256 numberOfTickets) external payable {
         require(!lotteryEndingInitiated, "Lottery ending initiated");
+        require(numberOfTickets > 0, "Must purchase at least one ticket");
         require(msg.value == ticketPrice * numberOfTickets, "Incorrect payment amount");
-        participants.push(msg.sender);
-        ticketCounts.push(numberOfTickets);
-        totalTickets += numberOfTickets;
-        emit TicketsPurchased(msg.sender, numberOfTickets);
+        _addParticipant(msg.sender, numberOfTickets, 0); // 0 indicates native chain
     }
 
-    function requestRandomWords() internal returns (uint256 requestId){
-        requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: keyHash,
-                subId: s_subscriptionId,
-                requestConfirmations: requestConfirmations,
-                callbackGasLimit: callbackGasLimit,
-                numWords: numWords,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
-            })
-        );
-        // s_requestId = requestId;
-        return requestId;
+    function _lzReceive(
+        Origin calldata _origin,
+        bytes32 _guid,
+        bytes calldata _payload,
+        address _executor,
+        bytes calldata _extraData
+    ) internal override {
+        require(!lotteryEndingInitiated, "Lottery ending initiated");
+        (address buyer, uint256 numberOfTickets) = abi.decode(_payload, (address, uint256));
+        _addParticipant(buyer, numberOfTickets, _origin.srcEid);
+    }
+
+    function _addParticipant(address buyer, uint256 numberOfTickets, uint32 sourceChain) internal {
+        if (participantTicketCounts[buyer] == 0) {
+            participants.push(buyer);
+        }
+        participantTicketCounts[buyer] += numberOfTickets;
+        participantSourceChains[buyer] = sourceChain;
+        ticketCounts.push(numberOfTickets);
+        totalTickets += numberOfTickets;
+        
+        emit TicketPurchased(buyer, numberOfTickets);
     }
 
     function endLottery() public {
-        // require(block.timestamp >= lotteryEndTime, "Lottery not yet ended");
+        require(block.timestamp >= lotteryEndTime, "Lottery not yet ended");
         require(!lotteryEndingInitiated, "Lottery ending already initiated");
         require(participants.length > 0, "No participants in the lottery");
         
         lotteryEndingInitiated = true;
-        s_requestId = requestRandomWords();
+        s_requestId = vrfCoordinator.requestRandomWords(
+            keyHash,
+            subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            numWords
+        );
 
         emit LotteryEndingStep("Lottery ending initiated");
         emit RandomWordsRequested(s_requestId);
     }
 
-    
-
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
         require(s_requestId == requestId, "Wrong requestId");
         require(lotteryEndingInitiated, "Lottery ending not initiated");
         require(participants.length > 0, "No participants");
@@ -129,16 +154,28 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
         
         winnerSelected = true;
         
-        // Attempt automatic payout
-        bool winnerPaid = _safeTransfer(payable(winner), prize);
-        bool ownerPaid = _safeTransfer(payable(s_owner), creatorFee);
+        uint32 winnerSourceChain = participantSourceChains[winner];
+        bool winnerPaid;
+        bool ownerPaid;
+
+        if (winnerSourceChain == 0) {
+            // Winner is on the native chain, transfer directly
+            winnerPaid = _safeTransfer(payable(winner), prize);
+            ownerPaid = _safeTransfer(payable(s_owner), creatorFee);
+        } else {
+            // Winner is on another chain, send prize back via LayerZero
+            bytes memory payload = abi.encode(winner, prize);
+            _lzSend(winnerSourceChain, payload, payable(address(this)), address(0), bytes(""), prize);
+            winnerPaid = true; // Assuming LayerZero transfer is successful
+            ownerPaid = _safeTransfer(payable(s_owner), creatorFee);
+        }
         
         // If automatic payout fails, store for manual withdrawal
         if (!winnerPaid) {
             pendingWithdrawals[winner] = prize;
         }
         if (!ownerPaid) {
-            pendingWithdrawals[owner()] = creatorFee;
+            pendingWithdrawals[s_owner] = creatorFee;
         }
         
         emit LotteryEnded(winner, prize, winnerPaid, ownerPaid);
@@ -193,4 +230,15 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
         return pendingWithdrawals[addr];
     }
 
+    receive() external payable {}
+
+    function _lzSend(
+        uint32 _dstEid,
+        bytes memory _payload,
+        bytes memory _options,
+        MessagingFee memory _fee,
+        address payable _refundAddress
+    ) internal virtual override {
+        super._lzSend(_dstEid, _payload, _options, _fee, _refundAddress);
+    }
 }

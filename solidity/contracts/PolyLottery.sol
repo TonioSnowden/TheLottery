@@ -94,7 +94,7 @@ contract PolyLottery is VRFConsumerBaseV2Plus {
     }
 
     function endLottery() public {
-        require(block.timestamp >= lotteryEndTime, "Lottery not yet ended");
+        // require(block.timestamp >= lotteryEndTime, "Lottery not yet ended");
         require(!lotteryEndingInitiated, "Lottery ending already initiated");
         require(participants.length > 0, "No participants in the lottery");
         

@@ -124,77 +124,80 @@ function App() {
   })
 
   return (
-    <div className="animated-background min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
-      <img src={logo} alt="TheLottery Logo" className="absolute top-8 left-8 w-20 h-20" />
-      {fallingCoins.map((coin) => (
-        <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
-      ))}
-      <div className="absolute top-8 right-8">
-        <DynamicWidget />
-      </div>
-      <h1 className="text-6xl font-bold mb-16 text-yellow-400 mt-5">TheLottery</h1>
-      <div className="bg-black p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
-          <p className="text-3xl font-bold text-red-400">{timeLeft}</p>
+    <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="animated-background"></div>
+      <div className="relative z-10 min-h-screen text-white flex flex-col items-center justify-start p-4 w-full">
+        <img src={logo} alt="TheLottery Logo" className="absolute top-8 left-8 w-20 h-20" />
+        {fallingCoins.map((coin) => (
+          <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
+        ))}
+        <div className="absolute top-8 right-8">
+          <DynamicWidget />
         </div>
-        <div className="mb-6 text-center">
-          <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
-          <p className="text-4xl font-bold text-green-400">{totalPrize} MATIC</p>
-        </div>
-        <div className="flex justify-between mb-6 items-end">
-          <div>
-            <label htmlFor="ticketCount" className="block text-lg mb-2">Number of Tickets:</label>
-            <div className="flex items-center">
-              <button
-                className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
-                onClick={() => adjustTicketCount(-1)}
-              >
-                -
-              </button>
-              <button
-                className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
-                onClick={() => adjustTicketCount(1)}
-              >
-                +
-              </button>
-              <span 
-                className={`text-3xl font-bold transition-all duration-100 ${
-                  isAnimating
-                    ? ticketCount > prevTicketCount
-                      ? 'text-blue-500 text-4xl'
-                      : ticketCount < prevTicketCount
-                      ? 'text-red-500 text-xl'
-                      : ''
-                    : 'text-white scale-100'
-                }`}
-              >
-                {ticketCount}
-              </span>
-            </div>
+        <h1 className="text-6xl font-bold mb-16 text-yellow-400 mt-5">TheLottery</h1>
+        <div className="p-8 rounded-lg max-w-2xl w-full">
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
+            <p className="text-3xl font-bold text-red-400">{timeLeft}</p>
           </div>
-          <button
-            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold"
-            onClick={buyTickets}
-            disabled={!isConnected}
-          >
-            Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(4)} MATIC)
-          </button>
-        </div>
-          {winningNumber !== null && (
-            <div className="mb-6 text-center">
-              <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
-              <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
-                {winningNumber}
+          <div className="mb-6 text-center">
+            <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
+            <p className="text-4xl font-bold text-green-400">{totalPrize} MATIC</p>
+          </div>
+          <div className="flex justify-between mb-6 items-end">
+            <div>
+              <label htmlFor="ticketCount" className="block text-lg mb-2">Number of Tickets:</label>
+              <div className="flex items-center">
+                <button
+                  className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
+                  onClick={() => adjustTicketCount(-1)}
+                >
+                  -
+                </button>
+                <button
+                  className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
+                  onClick={() => adjustTicketCount(1)}
+                >
+                  +
+                </button>
+                <span 
+                  className={`text-3xl font-bold transition-all duration-100 ${
+                    isAnimating
+                      ? ticketCount > prevTicketCount
+                        ? 'text-blue-500 text-4xl'
+                        : ticketCount < prevTicketCount
+                        ? 'text-red-500 text-xl'
+                        : ''
+                      : 'text-white scale-100'
+                  }`}
+                >
+                  {ticketCount}
+                </span>
               </div>
             </div>
-          )}
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
-            <p className="text-green-400 font-mono">
-              {winnerEnsName || lastWinner}
-            </p>
-            <p className="text-xl font-bold mt-2">Congratulations!</p>
+            <button
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold"
+              onClick={buyTickets}
+              disabled={!isConnected}
+            >
+              Buy Tickets ({(ticketCount * parseFloat(ticketPrice)).toFixed(4)} MATIC)
+            </button>
+          </div>
+            {winningNumber !== null && (
+              <div className="mb-6 text-center">
+                <h2 className="text-2xl font-semibold mb-2">Winning Number:</h2>
+                <div className="bg-yellow-400 text-black w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto">
+                  {winningNumber}
+                </div>
+              </div>
+            )}
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold mb-2">Last Winner</h2>
+              <p className="text-green-400 font-mono">
+                {winnerEnsName || lastWinner}
+              </p>
+              <p className="text-xl font-bold mt-2">Congratulations!</p>
+            </div>
           </div>
         </div>
       </div>

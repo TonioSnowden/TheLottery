@@ -143,7 +143,7 @@ function App() {
           <div className="p-8 flex justify-between items-center">
             <h2 className="text-3xl font-semibold text-white">Current Jackpot:</h2>
             <p className="text-4xl font-bold text-green-400">
-              {totalPrize} MATIC <span className="text-2xl">($XX.XX)</span>
+              {totalPrize} USDT
             </p>
           </div>
           <div className="mt-12 flex justify-between mb-6 items-end p-10 bg-black bg-opacity-50">
@@ -168,7 +168,7 @@ function App() {
                       ? ticketCount > prevTicketCount
                         ? 'text-blue-500 text-5xl'
                         : ticketCount < prevTicketCount
-                        ? 'text-red-500 text-3xl'
+                        ? 'text-red-500 text-2xl'
                         : ''
                       : 'text-white scale-100'
                   }`}
@@ -191,7 +191,7 @@ function App() {
                 {winnerEnsName || lastWinner}
               </p>
               <p className="text-yellow-400 font-mono text-3xl">
-                Won: {lastWinnerData.prize} MATIC
+                Won: {lastWinnerData.prize} USDT
               </p>
             </div>
           </div>

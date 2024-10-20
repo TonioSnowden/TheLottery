@@ -16,6 +16,7 @@ const CONTRACT_ADDRESS = '0xf4e53F35b1e8665928518D1511BB1Ff3Fa30B791'
 function App() {
   const [winningNumber, setWinningNumber] = useState<number | null>(null)
   const [ticketCount, setTicketCount] = useState<number>(1)
+  const [prevTicketCount, setPrevTicketCount] = useState<number>(1)
   const [lastWinner, setLastWinner] = useState<string>(lastWinnerData.address)
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [fallingCoins, setFallingCoins] = useState<{ id: number; left: number }[]>([])
@@ -25,6 +26,7 @@ function App() {
   const [isConnected, setIsConnected] = useState(false)
   const isLoggedIn = useIsLoggedIn()
   const {  primaryWallet } = useDynamicContext()
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -98,11 +100,14 @@ function App() {
   }
 
   const adjustTicketCount = (amount: number) => {
+    setPrevTicketCount(ticketCount);
     setTicketCount((prev) => Math.max(1, prev + amount));
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 150); // Reset after 0.1 seconds
     if (amount > 0) {
-      const coinCount = Math.floor(Math.random() * 4) + 1; // Random number between 1 and 4
+      const coinCount = Math.floor(Math.random() * 4) + 1;
       const newCoins = Array.from({ length: coinCount }, () => ({
-        id: Date.now() + Math.random(), // Ensure unique IDs
+        id: Date.now() + Math.random(),
         left: Math.random() * window.innerWidth,
       }));
       setFallingCoins((prevCoins) => [...prevCoins, ...newCoins]);
@@ -119,56 +124,56 @@ function App() {
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
-      <img src={logo} alt="TheLottery Logo" className="absolute top-4 left-4 w-16 h-16" />
+      <img src={logo} alt="TheLottery Logo" className="absolute top-8 left-8 w-20 h-20" />
       {fallingCoins.map((coin) => (
         <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
       ))}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-8 right-8">
         <DynamicWidget />
       </div>
-      <h1 className="text-5xl font-bold mb-8 text-yellow-400 mt-8">TheLottery</h1>
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full">
+      <h1 className="text-6xl font-bold mb-16 text-yellow-400 mt-5">TheLottery</h1>
+      <div className="bg-black p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
+          <p className="text-3xl font-bold text-red-400">{timeLeft}</p>
+        </div>
         <div className="mb-6 text-center">
           <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
           <p className="text-4xl font-bold text-green-400">{totalPrize} MATIC</p>
         </div>
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
-          <p className="text-3xl font-bold text-blue-400">{timeLeft}</p>
-        </div>
         <div className="flex justify-between mb-6 items-end">
           <div>
-            <label htmlFor="ticketCount" className="block mb-2">Number of Tickets:</label>
+            <label htmlFor="ticketCount" className="block text-lg mb-2">Number of Tickets:</label>
             <div className="flex items-center">
               <button
-                className="bg-gray-700 text-white px-3 py-2 rounded-l"
+                className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
                 onClick={() => adjustTicketCount(-1)}
               >
                 -
               </button>
-              <input
-                type="number"
-                id="ticketCount"
-                value={ticketCount}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value)
-                  if (!isNaN(value) && value >= 1) {
-                    setTicketCount(value)
-                  }
-                }}
-                className="bg-gray-700 text-white px-3 py-2 w-16 text-center"
-                readOnly
-              />
               <button
-                className="bg-gray-700 text-white px-3 py-2 rounded-r"
+                className="bg-yellow-400 text-black font-bold px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors mr-2"
                 onClick={() => adjustTicketCount(1)}
               >
                 +
               </button>
+              <span 
+                className={`text-3xl font-bold transition-all duration-100 ${
+                  isAnimating
+                    ? ticketCount > prevTicketCount
+                      ? 'text-blue-500 text-4xl'
+                      : ticketCount < prevTicketCount
+                      ? 'text-red-500 text-xl'
+                      : ''
+                    : 'text-white scale-100'
+                }`}
+              >
+                {ticketCount}
+              </span>
             </div>
           </div>
           <button
-            className="bg-yellow-500 text-black px-6 py-2 rounded font-bold"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded font-bold"
             onClick={buyTickets}
             disabled={!isConnected}
           >

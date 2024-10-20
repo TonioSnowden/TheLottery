@@ -43,11 +43,11 @@ function App() {
 
     const timer = setInterval(() => {
       const now = new Date()
-      const nextSunday = new Date(now)
-      nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7)
-      nextSunday.setHours(7, 0, 0, 0)
+      const nextMonday = new Date(now)
+      nextMonday.setDate(now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7))
+      nextMonday.setHours(7, 0, 0, 0)
       
-      const timeDiff = nextSunday.getTime() - now.getTime()
+      const timeDiff = nextMonday.getTime() - now.getTime()
       
       if (timeDiff > 0) {
         const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
@@ -135,14 +135,16 @@ function App() {
           <DynamicWidget />
         </div>
         <h1 className="text-6xl font-bold mb-16 text-yellow-400 mt-5">TheLottery</h1>
-        <div className="p-8 rounded-lg max-w-2xl w-full">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-semibold mb-2">Next Draw</h2>
-            <p className="text-3xl font-bold text-red-400">{timeLeft}</p>
+        <div className="p-8 rounded-lg max-w-4xl w-full">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-semibold text-white">Next Draw:</h2>
+            <p className="text-4xl font-bold text-yellow-400">{timeLeft}</p>
           </div>
-          <div className="mb-6 text-center">
-            <h2 className="text-3xl font-semibold mb-2">Current Jackpot</h2>
-            <p className="text-4xl font-bold text-green-400">{totalPrize} MATIC</p>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-semibold text-white">Current Jackpot:</h2>
+            <p className="text-4xl font-bold text-green-400">
+              {totalPrize} MATIC <span className="text-2xl">($XX.XX)</span>
+            </p>
           </div>
           <div className="flex justify-between mb-6 items-end">
             <div>

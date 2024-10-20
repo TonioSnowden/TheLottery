@@ -5,6 +5,7 @@ import lastWinnerData from './json/lastWinner.json'
 import lotteryInfoData from './json/lotteryInfo.json'
 import { useEnsName } from 'wagmi'
 import logo from './assets/logo.svg'
+import './AnimatedBackground.css';
 
 import { DynamicWidget, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
@@ -123,7 +124,7 @@ function App() {
   })
 
   return (
-    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
+    <div className="animated-background min-h-screen text-white flex flex-col items-center justify-start p-4 w-full relative overflow-hidden">
       <img src={logo} alt="TheLottery Logo" className="absolute top-8 left-8 w-20 h-20" />
       {fallingCoins.map((coin) => (
         <FallingCoin key={coin.id} left={coin.left} onFinish={() => removeCoin(coin.id)} />
